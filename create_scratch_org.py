@@ -11,7 +11,7 @@ def get_arguments():
     parser = argparse.ArgumentParser(description='Script to config a scratch org of salesforce')
 
     parser.add_argument("-sa", "--scratch-alias", dest = "scratch_alias", required=True, help="The scratch org's alias")
-    parser.add_argument("-dd", "----duration-days", dest = "duration_days", type=int, default=7, help="The days duratation of scratch org")
+    parser.add_argument("-dd", "----duration-days", dest = "duration_days", type=int, default=7, help="The duration days of scratch org")
     parser.add_argument("-wf", "--workspace-folder", dest = "workspace_folder", default = "", required=True, help="The workspace path to the folder of the project")
     
     global args

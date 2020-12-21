@@ -6,6 +6,7 @@ from subprocess import run
 import argparse
 
 global args
+global username
 
 def get_arguments():
     parser = argparse.ArgumentParser(description='Script to config a scratch org of salesforce')
@@ -17,10 +18,10 @@ def get_arguments():
     global args
     args = parser.parse_args()
 
-def run_command(command, shell=False):
+def run_command(command, shell=False, capture_output=False):
     try:
         print('Executing command: ' + ' '.join(command))
-        result_command = run(command, universal_newlines=True, shell=shell)
+        result_command = run(command, universal_newlines=True, shell=shell, capture_output=capture_output)
         return result_command
     except KeyboardInterrupt as err:
         print('COMMAND ERROR! EXITING SCRIPT')
@@ -36,12 +37,17 @@ def create_scratch_org():
     command = ['sfdx', 'force:org:create', '-f', args.workspace_folder + '/config/project-scratch-def.json', '--setalias',
                 args.scratch_alias, '--durationdays', str(args.duration_days), '--setdefaultusername', '--json', '--loglevel', 'fatal']
     
-    run_command(command)
+    result_command = run_command(command,capture_output=True)
+    output = result_command.stdout
+    json_object = json.loads(output)
+    global username
+    username = json_object['result']['username']
+
 
 def install_dependencies():
     dependencies = get_dependencies()
     
-    command = ['sfdx', 'force:package:install', '-u', args.scratch_alias]
+    command = ['sfdx', 'force:package:install', '-u', username]
 
     for dependency in dependencies:
         command.append('--package')
@@ -72,12 +78,12 @@ def read_file(dir_path):
         return None
 
 def push_code():
-    command = ['sfdx', 'force:source:push', '-u', args.scratch_alias]
+    command = ['sfdx', 'force:source:push', '-u', username]
 
     run_command(command)
 
 def open_scratch_org():
-    command = ['sfdx', 'force:org:open', '-u', args.scratch_alias]
+    command = ['sfdx', 'force:org:open', '-u', username]
 
     run_command(command)
 

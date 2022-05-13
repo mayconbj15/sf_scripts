@@ -12,7 +12,7 @@ def get_arguments():
     parser = argparse.ArgumentParser(description='Script to config a scratch org of salesforce')
 
     parser.add_argument("-sa", "--scratch-alias", dest = "scratch_alias", required=True, help="The scratch org's alias")
-    parser.add_argument("-dd", "----duration-days", dest = "duration_days", type=int, default=7, help="The duration days of scratch org")
+    parser.add_argument("-dd", "--duration-days", dest = "duration_days", type=int, default=7, help="The duration days of scratch org")
     parser.add_argument("-wf", "--workspace-folder", dest = "workspace_folder", default = "", required=True, help="The workspace path to the folder of the project")
     
     global args
@@ -47,35 +47,39 @@ def create_scratch_org():
 def install_dependencies():
     dependencies = get_dependencies()
     
-    command = ['sfdx', 'force:package:install', '-u', username]
+    if dependencies != None:
+        command = ['sfdx', 'force:package:install', '-u', username]
 
-    for dependency in dependencies:
-        command.append('--package')
-        command.append(dependency)
-    
-    run_command(command)
+        for dependency in dependencies:
+            command.append('--package')
+            command.append(dependency)
+        
+        run_command(command)
     
 
 def get_dependencies():
     json_file = read_file(args.workspace_folder + '/environments.json')  
-    json_object = json.loads(json_file)
+    if json_file != None:
+        json_object = json.loads(json_file)
 
-    dependencies = []
+        dependencies = []
 
-    for dependency in json_object["development"]["dependencies"]:
-        dependencies.append(dependency["id"])
-    
-    return dependencies
+        for dependency in json_object["development"]["dependencies"]:
+            dependencies.append(dependency["id"])
+        
+        return dependencies 
 
 def read_file(dir_path):
-    try:
-        f = open(dir_path)
-        file = f.read()
-        f.close()
-        return file
-    except:
-        print('Erro ao abrir arquivo ' + dir_path)
-        return None
+    if os.path.exists(dir_path):
+        try:
+            f = open(dir_path)
+            file = f.read()
+            f.close()
+            return file
+        except:
+            print('Erro ao abrir arquivo ' + dir_path)
+    
+    return None
 
 def push_code():
     command = ['sfdx', 'force:source:push', '-u', username]
